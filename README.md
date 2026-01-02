@@ -9,9 +9,10 @@ This is a proof-of-concept showing how to build a fully functional, interactive 
 
 ## Tech Stack
 
-1.   **Backend**: Python (uv, FastAPI)
-2.   **Frontend**: htmx + Jinja2 Templates + Bootstrap
-3.   **Data**: Local JSON file (simulating a database)
+1.  **Backend**: Python (uv, FastAPI)
+2.  **Frontend**: htmx + Jinja2 Templates + Bootstrap
+3.  **Data**: Local JSON file (simulating a database)
+
 
 ## Quick Start
 
