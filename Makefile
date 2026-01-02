@@ -6,4 +6,5 @@ up:
 
 build:
 	@echo "Building ..." \
+	&& uv venv --clear && source .venv/bin/activate  \
 	&& uv sync
