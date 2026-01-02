@@ -9,3 +9,4 @@ wheels/
 # Virtual environments
 .venv
 PROJECT_GUIDE.md
+data/sessions.json
