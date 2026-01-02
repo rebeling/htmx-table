@@ -1,3 +1,4 @@
+import logging
 import math
 import uuid
 from pathlib import Path
@@ -7,13 +8,19 @@ from fastapi import FastAPI, Form, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from utils import (
+
+from backend.utils import (
     apply_filters,
     apply_sort,
     get_active_columns,
     load_json,
     save_json,
+    format_date_string,
 )
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("htmx-table")
 
 app = FastAPI()
 
@@ -26,6 +33,7 @@ SESSION_FILE = DATA_DIR / "sessions.json"
 SETTINGS_FILE = DATA_DIR / "app_settings.json"
 
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+templates.env.filters["date_format"] = format_date_string
 
 # Global State
 DATASET: List[Dict[str, Any]] = []
@@ -97,9 +105,13 @@ def get_session(request: Request, response: Response = None) -> Dict[str, Any]:
 # --- Routes ---
 
 
-@app.get("/", include_in_schema=False)
-async def root():
-    return RedirectResponse(url="/examples/src3-simple.html")
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={"features": APP_SETTINGS["features"]},
+    )
 
 
 @app.get("/table-header", response_class=HTMLResponse)
@@ -131,14 +143,16 @@ async def get_table_data(
 
     # Update session if sort params provided
     if sort:
-        session["sort"]["key"] = sort
-        session["sort"]["dir"] = dir or "asc"
-        save_json(SESSION_FILE, SESSIONS)
+        new_dir = dir or "asc"
+        if session["sort"]["key"] != sort or session["sort"]["dir"] != new_dir:
+            session["sort"]["key"] = sort
+            session["sort"]["dir"] = new_dir
+            save_json(SESSION_FILE, SESSIONS)
 
     current_sort = session["sort"]
 
     filtered_data = apply_filters(
-        DATASET, q=q, column_filters=column_filters, settings=APP_SETTINGS
+        DATASET, COLUMNS, q=q, column_filters=column_filters, settings=APP_SETTINGS
     )
     sorted_data = apply_sort(filtered_data, current_sort["key"], current_sort["dir"])
 
@@ -165,7 +179,7 @@ async def get_table_data(
             if v:
                 filter_params += f"&{k}={v}"
 
-    return templates.TemplateResponse(
+    resp = templates.TemplateResponse(
         request=request,
         name="table.html",
         context={
@@ -178,6 +192,10 @@ async def get_table_data(
             "show_filters": APP_SETTINGS["features"].get("column_filters", False),
         },
     )
+    # Ensure session cookie is preserved
+    if response.headers.get("set-cookie"):
+        resp.headers["set-cookie"] = response.headers["set-cookie"]
+    return resp
 
 
 @app.get("/table-settings", response_class=HTMLResponse)
@@ -189,15 +207,18 @@ async def get_settings_control(request: Request, response: Response):
     current = session.get("per_page", 10)
     options = APP_SETTINGS["defaults"]["per_page_options"]
 
-    return templates.TemplateResponse(
+    resp = templates.TemplateResponse(
         request=request,
         name="per_page.html",
         context={"options": options, "current": current},
     )
+    if response.headers.get("set-cookie"):
+        resp.headers["set-cookie"] = response.headers["set-cookie"]
+    return resp
 
 
 @app.get("/table-settings-modal", response_class=HTMLResponse)
-async def get_settings_modal(request: Request, response: Response):
+async def get_settings_modal(request: Request, response: Response, q: Optional[str] = None):
     if not APP_SETTINGS["features"]["column_settings"]:
         return ""
 
@@ -213,11 +234,20 @@ async def get_settings_modal(request: Request, response: Response):
         col = col_map.get(key)
         if not col:
             continue
-        items.append({"key": key, "label": col["label"], "visible": key in visible})
+        items.append({
+            "key": key,
+            "label": col["label"],
+            "visible": key in visible,
+            "custom_pattern": col.get("custom_pattern"),
+            "default_pattern": col.get("default_pattern")
+        })
 
-    return templates.TemplateResponse(
-        request=request, name="modal.html", context={"items": items}
+    resp = templates.TemplateResponse(
+        request=request, name="modal.html", context={"items": items, "q": q}
     )
+    if response.headers.get("set-cookie"):
+        resp.headers["set-cookie"] = response.headers["set-cookie"]
+    return resp
 
 
 @app.post("/table-settings", response_class=HTMLResponse)
@@ -226,19 +256,40 @@ async def update_settings(
     response: Response,
     per_page: Optional[int] = Form(None),
     q: Optional[str] = Form(None),
-    visible: List[str] = Form(None),
-    order: List[str] = Form(None),
+    visible: List[str] = Form(default=None),
+    order: List[str] = Form(default=None),
+    pattern_created_date: Optional[str] = Form(None)
 ):
     session = get_session(request, response)
+
+    logger.info(f"Update settings: visible={visible}, order={order}, pattern={pattern_created_date}")
 
     if per_page is not None and APP_SETTINGS["features"]["pagination"]:
         session["per_page"] = per_page
 
     if APP_SETTINGS["features"]["column_settings"]:
-        if visible is not None:
-            session["columns"]["visible"] = visible
+        # If 'order' is present, it means the column settings form was submitted.
+        # In this case, if 'visible' is missing (None), it implies all columns were unchecked.
         if order is not None:
             session["columns"]["order"] = order
+            session["columns"]["visible"] = visible if visible is not None else []
+            
+            # Handle date pattern update
+            if pattern_created_date is not None:
+                # Update global settings
+                if "created_date" not in APP_SETTINGS.get("columns", {}):
+                    if "columns" not in APP_SETTINGS:
+                        APP_SETTINGS["columns"] = {}
+                    APP_SETTINGS["columns"]["created_date"] = {}
+                
+                APP_SETTINGS["columns"]["created_date"]["custom_pattern"] = pattern_created_date
+                save_json(SETTINGS_FILE, APP_SETTINGS)
+                
+                # Update in-memory columns
+                for col in COLUMNS:
+                    if col["key"] == "created_date":
+                        col["custom_pattern"] = pattern_created_date
+                        break
 
     save_json(SESSION_FILE, SESSIONS)
 

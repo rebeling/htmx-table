@@ -1,0 +1,4 @@
+.htmx-indicator {
+  color: var(--htmx-table-loading);
+  font-size: 14px;
+}

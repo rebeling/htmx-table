@@ -7,15 +7,28 @@
               hx-target="#table-container"
               hx-swap="innerHTML"
               _="on htmx:afterOnLoad trigger closeModal">
+            {% if q %}
+            <input type="hidden" name="q" value="{{ q }}">
+            {% endif %}
             <div class="sortable" style="margin-bottom: 20px;">
                 {% for item in items %}
                 <div class="htx-columns-item">
                     <span class="htx-drag-handle" style="cursor: grab; margin-right: 10px; color: #888;">::</span>
                     <input type="hidden" name="order" value="{{ item.key }}">
-                    <label>
-                        <input type="checkbox" name="visible" value="{{ item.key }}" {% if item.visible %}checked{% endif %}>
-                        {{ item.label }}
-                    </label>
+                    <div class="d-flex align-items-center justify-content-between w-100">
+                        <label class="mb-0">
+                            <input type="checkbox" name="visible" value="{{ item.key }}" {% if item.visible %}checked{% endif %}>
+                            {{ item.label }}
+                        </label>
+                        {% if item.key == 'created_date' %}
+                        <input type="text" 
+                               name="pattern_created_date" 
+                               class="form-control form-control-sm" 
+                               style="width: 120px; font-size: 0.75rem;" 
+                               value="{{ item.custom_pattern or '' }}"
+                               placeholder="{{ item.default_pattern or 'YYYY-MM-DD' }}">
+                        {% endif %}
+                    </div>
                 </div>
                 {% endfor %}
             </div>
@@ -25,4 +38,16 @@
             </div>
         </form>
     </div>
+    <script>
+        (function() {
+            var sortable = document.querySelector("#modal .sortable");
+            if (sortable) {
+                new Sortable(sortable, {
+                    animation: 150,
+                    ghostClass: "htx-sortable-ghost",
+                    handle: ".htx-drag-handle",
+                });
+            }
+        })();
+    </script>
 </div>

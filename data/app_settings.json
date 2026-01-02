@@ -7,15 +7,50 @@
   },
   "defaults": {
     "per_page": 10,
-    "per_page_options": [10, 25, 50, 100]
+    "per_page_options": [
+      10,
+      25,
+      50,
+      100
+    ]
   },
   "columns": {
-    "full_name": { "filterable": true, "label": "Name" },
-    "email": { "filterable": true, "label": "Email" },
-    "country": { "filterable": true, "label": "Country" },
-    "status": { "filterable": true, "type": "select", "options": ["active", "blocked", "pending"], "label": "Status" },
-    "age": { "filterable": false, "label": "Age" },
-    "balance_eur": { "filterable": false, "label": "Balance" },
-    "created_date": { "filterable": false, "label": "Created" }
+    "full_name": {
+      "filterable": true,
+      "label": "Name"
+    },
+    "email": {
+      "filterable": true,
+      "label": "Email"
+    },
+    "country": {
+      "filterable": true,
+      "label": "Country"
+    },
+    "status": {
+      "filterable": true,
+      "type": "select",
+      "options": [
+        "active",
+        "blocked",
+        "pending"
+      ],
+      "label": "Status"
+    },
+    "age": {
+      "filterable": false,
+      "label": "Age"
+    },
+    "balance_eur": {
+      "filterable": false,
+      "label": "Balance",
+      "align": "right"
+    },
+    "created_date": {
+      "filterable": false,
+      "label": "Created",
+      "default_pattern": "YYYY-MM-DD",
+      "custom_pattern": "DD.MM.YYYY"
+    }
   }
 }

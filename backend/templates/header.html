@@ -6,7 +6,8 @@
     </div>
     {% if features.column_settings %}
     <button class="btn btn-primary" hx-get="/table-settings-modal"
-            hx-target="body" hx-swap="beforeend">Columns</button>
+            hx-target="body" hx-swap="beforeend"
+            hx-include="[name='q']">Columns</button>
     {% endif %}
 </div>
 

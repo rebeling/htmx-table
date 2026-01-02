@@ -9,9 +9,10 @@
         {% set next_dir = 'desc' if is_active and current_sort.dir == 'asc' else 'asc' %}
         {% set arrow = ' &#8593;' if is_active and current_sort.dir == 'asc' else (' &#8595;' if is_active else '') %}
         {% set cls = ' class="bg-light"' if is_active else '' %}
+        {% set justify_class = 'justify-content-end' if col.align == 'right' else 'justify-content-between' %}
 
         <th{{ cls|safe }}>
-            <div class="d-flex align-items-center gap-1 justify-content-between">
+            <div class="d-flex align-items-center gap-1 {{ justify_class }}">
                 <span style="cursor: pointer;"
                     hx-get="/table-data?sort={{ key }}&dir={{ next_dir }}{{ filter_params }}"
                     hx-target="#table-container"
@@ -80,12 +81,14 @@
         {% for col in columns %}
           {% set key = col.key %}
           {% set val = row.get(key) %}
-          <td>
+          <td{% if col.align == 'right' %} class="text-end"{% endif %}>
             {% if key == 'balance_eur' %}
               {{ "%.2f"|format(val|float) }}€
             {% elif key == 'status' %}
               {% set cls = 'bg-success' if val == 'active' else 'bg-secondary' %}
               <span class="badge {{ cls }}">{{ val }}</span>
+            {% elif key == 'created_date' %}
+              {{ val|date_format(col.custom_pattern or col.default_pattern or 'YYYY-MM-DD') }}
             {% else %}
               {{ val }}
             {% endif %}
