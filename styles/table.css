@@ -36,28 +36,28 @@ table tbody tr:nth-child(even) {
 
 /* Filter Dropdown */
 .filter-dropdown {
-    position: relative;
-    display: inline-block;
+  position: relative;
+  display: inline-block;
 }
 
 .filter-dropdown summary {
-    list-style: none;
-    cursor: pointer;
+  list-style: none;
+  cursor: pointer;
 }
 
 .filter-dropdown summary::-webkit-details-marker {
-    display: none;
+  display: none;
 }
 
 .filter-dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 100;
-    min-width: 200px;
-    background-color: #fff;
-    border: 1px solid rgba(0,0,0,.15);
-    border-radius: 0.25rem;
-    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.175);
-    padding: 0.5rem;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 100;
+  min-width: 200px;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 0.25rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+  padding: 0.5rem;
 }

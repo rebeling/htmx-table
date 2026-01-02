@@ -96,6 +96,10 @@ def get_session(request: Request, response: Response = None) -> Dict[str, Any]:
         session["sort"] = {"key": "created_date", "dir": "desc"}
         save_needed = True
 
+    if "selection" not in session:
+        session["selection"] = {"mode": "include", "ids": []}
+        save_needed = True
+
     if save_needed:
         save_json(SESSION_FILE, SESSIONS)
 
@@ -156,6 +160,26 @@ async def get_table_data(
     )
     sorted_data = apply_sort(filtered_data, current_sort["key"], current_sort["dir"])
 
+    # Mark selected rows
+    sel_mode = session["selection"]["mode"]
+    sel_ids = set(session["selection"]["ids"])
+    
+    # Calculate selection stats
+    total_matching = len(sorted_data)
+    if sel_mode == "include":
+        selection_count = len(sel_ids)
+        is_global_selected = False
+    else: # exclude
+        selection_count = total_matching - len(sel_ids)
+        is_global_selected = (len(sel_ids) == 0)
+
+    for row in sorted_data:
+        rid = str(row.get("id", "")) # Ensure we have ID
+        if sel_mode == "include":
+            row["_selected"] = rid in sel_ids
+        else:
+            row["_selected"] = rid not in sel_ids
+
     page_info = None
     if APP_SETTINGS["features"]["pagination"]:
         per_page = session.get("per_page", 10)
@@ -166,7 +190,7 @@ async def get_table_data(
         start = (page - 1) * per_page
         end = start + per_page
         paged_data = sorted_data[start:end]
-        page_info = {"current": page, "total": total_pages}
+        page_info = {"current": page, "total": total_pages, "total_items": total_items}
     else:
         paged_data = sorted_data[:100]
 
@@ -190,6 +214,13 @@ async def get_table_data(
             "filters": column_filters,
             "filter_params": filter_params,
             "show_filters": APP_SETTINGS["features"].get("column_filters", False),
+            "show_row_selection": APP_SETTINGS["features"].get("row_selection", False),
+            "selection_info": {
+                "count": selection_count,
+                "total": total_matching,
+                "is_global": is_global_selected,
+                "mode": sel_mode
+            }
         },
     )
     # Ensure session cookie is preserved
@@ -295,6 +326,67 @@ async def update_settings(
 
     # Delegate to get_table_data to render the updated table
     return await get_table_data(request, response, q=q)
+
+
+@app.post("/selection", response_class=HTMLResponse)
+async def update_selection(
+    request: Request,
+    response: Response,
+    action: str = Form(...),
+    id: Optional[str] = Form(None),
+    ids: Optional[str] = Form(None), # comma separated for page select
+    q: Optional[str] = Form(None),
+    page: int = Form(1)
+):
+    session = get_session(request, response)
+    mode = session["selection"]["mode"]
+    current_ids = set(session["selection"]["ids"])
+
+    if action == "toggle":
+        if not id:
+            pass # Error?
+        elif mode == "include":
+            if id in current_ids:
+                current_ids.remove(id)
+            else:
+                current_ids.add(id)
+        else: # exclude
+            if id in current_ids:
+                current_ids.remove(id) # Re-include it (remove from exclude list)
+            else:
+                current_ids.add(id) # Exclude it
+
+    elif action == "select_page":
+        # We need the IDs on the current page. passed via hidden input or we assume ids param
+        if ids:
+            page_ids = ids.split(",")
+            if mode == "include":
+                current_ids.update(page_ids)
+            else:
+                current_ids.difference_update(page_ids)
+
+    elif action == "deselect_page":
+        if ids:
+            page_ids = ids.split(",")
+            if mode == "include":
+                current_ids.difference_update(page_ids)
+            else:
+                current_ids.update(page_ids)
+
+    elif action == "select_global":
+        session["selection"]["mode"] = "exclude"
+        current_ids = set() # Exclude nothing = Include all
+
+    elif action == "clear":
+        session["selection"]["mode"] = "include"
+        current_ids = set()
+
+    session["selection"]["ids"] = list(current_ids)
+    save_json(SESSION_FILE, SESSIONS)
+    
+    # Delegate to get_table_data to render the updated table
+    # The frontend should include current params.
+    return await get_table_data(request, response, q=q, page=page)
 
 
 app.mount("/examples", StaticFiles(directory=str(ROOT_DIR / "examples")), name="examples")

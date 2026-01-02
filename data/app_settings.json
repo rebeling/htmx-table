@@ -3,7 +3,8 @@
     "search": true,
     "column_settings": true,
     "pagination": true,
-    "column_filters": true
+    "column_filters": true,
+    "row_selection": true
   },
   "defaults": {
     "per_page": 10,

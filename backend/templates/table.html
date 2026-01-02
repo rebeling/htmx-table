@@ -1,7 +1,55 @@
 <!-- prettier-ignore -->
+{% set page_ids = rows|map(attribute='id')|join(',') %}
+{% set selected_rows = rows|selectattr('_selected')|list %}
+{% set all_page_selected = rows and (selected_rows|length == rows|length) %}
+
+<!-- Selection Banner -->
+{% if show_row_selection and selection_info %}
+<div id="selection-banner" class="mb-2 text-secondary" style="font-size: 0.8rem;">
+  <input type="hidden" name="page" value="{{ page_info.current }}">
+  {% if selection_info.mode == 'exclude' and selection_info.is_global %}
+     <span class="fw-bold">All {{ selection_info.total }} items in this list are selected.</span>
+     <button class="btn btn-sm btn-link text-danger text-decoration-none p-0 ms-2" 
+             style="font-size: 0.8rem;"
+             hx-post="/selection" 
+             hx-target="#table-container"
+             hx-vals='{"action": "clear"}'
+             hx-include="[name='q'], [name='page'], .table-filter">Clear selection</button>
+  {% else %}
+     <span>{{ selection_info.count }} items selected</span>
+     {% if selection_info.count > 0 and all_page_selected and selection_info.total > rows|length %}
+       <button class="btn btn-sm btn-link fw-bold text-decoration-none p-0 ms-2" 
+               style="font-size: 0.8rem;"
+               hx-post="/selection" 
+               hx-target="#table-container"
+               hx-vals='{"action": "select_global"}'
+               hx-include="[name='q'], [name='page'], .table-filter">Select all {{ selection_info.total }} items in this list?</button>
+     {% endif %}
+     {% if selection_info.count > 0 %}
+       <button class="btn btn-sm btn-link text-danger text-decoration-none p-0 ms-2" 
+             style="font-size: 0.8rem;"
+             hx-post="/selection" 
+             hx-target="#table-container"
+             hx-vals='{"action": "clear"}'
+             hx-include="[name='q'], [name='page'], .table-filter">Clear selection</button>
+     {% endif %}
+  {% endif %}
+</div>
+{% endif %}
+
 <table class="table table-hover" id="results-table">
   <thead>
     <tr>
+      {% if show_row_selection %}
+      <th style="width: 40px;" class="text-center">
+        <input type="checkbox" class="form-check-input"
+               hx-post="/selection"
+               hx-target="#table-container"
+               hx-include="[name='q'], [name='page'], .table-filter"
+               hx-vals='{"action": "{{ 'deselect_page' if all_page_selected else 'select_page' }}", "ids": "{{ page_ids }}"}'
+               {% if all_page_selected %}checked{% endif %}>
+      </th>
+      {% endif %}
       {% for col in columns %}
         {% set key = col.key %}
         {% set label = col.label %}
@@ -74,10 +122,20 @@
   <!-- prettier-ignore -->
   <tbody>
     {% if not rows %}
-      <tr><td colspan="{{ columns|length }}">No results found.</td></tr>
+      <tr><td colspan="{{ columns|length + (1 if show_row_selection else 0) }}">No results found.</td></tr>
     {% else %}
       {% for row in rows %}
       <tr>
+        {% if show_row_selection %}
+        <td class="text-center">
+          <input type="checkbox" class="form-check-input row-checkbox" 
+                 hx-post="/selection"
+                 hx-target="#table-container"
+                 hx-include="[name='q'], [name='page'], .table-filter"
+                 hx-vals='{"action": "toggle", "id": "{{ row.id }}"}'
+                 {% if row._selected %}checked{% endif %}>
+        </td>
+        {% endif %}
         {% for col in columns %}
           {% set key = col.key %}
           {% set val = row.get(key) %}
