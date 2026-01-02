@@ -1,10 +1,6 @@
 # htmx table
 
-This is a proof-of-concept showing how to build a fully functional, interactive data table using **htmx**, **FastAPI** and **Jinja2**.
-
-## How it works
-
-**htmx: the server is the source of truth.**
+This is a proof-of-concept showing how to build a fully functional, interactive data table using **htmx**.
 
 1.  **State**: Sort order, filters, and pagination are stored in the user's session on the backend.
 2.  **Rendering**: When you click "Next Page" or "Sort", htmx sends a simple request.
@@ -13,26 +9,18 @@ This is a proof-of-concept showing how to build a fully functional, interactive 
 
 ## Tech Stack
 
-*   **Backend**: Python (FastAPI)
-*   **Frontend**: HTML + Jinja2 Templates + Bootstrap 5
-*   **Interactivity**: htmx
-*   **Data**: Local JSON file (simulating a database)
+1.   **Backend**: Python (uv, FastAPI)
+2.   **Frontend**: htmx + Jinja2 Templates + Bootstrap
+3.   **Data**: Local JSON file (simulating a database)
 
 ## Quick Start
 
-1.  Install dependencies:
-    ```bash
-    uv sync
-    ```
+```bash
+make build
+make up
+```
 
-2.  Run the server:
-    ```bash
-    uv run backend/main.py
-    ```
-
-3.  Open `http://localhost:8000` in your browser.
-
-4. See http://localhost:8000/docs for endpoints.
+Open `http://localhost:8000` in your browser for the table and `http://localhost:8000/docs` for the openapi description.
 
 
 ## Example
@@ -47,7 +35,8 @@ Here is how a sortable header works. Instead of writing a JavaScript click handl
 </span>
 ```
 
-When clicked, this fetches the sorted table HTML and replaces the content of `#table-container`.
+When clicked, this fetches the sorted table HTML from server and replaces the content of `#table-container`.
+
 
 ## Configuration (app_settings.json)
 
