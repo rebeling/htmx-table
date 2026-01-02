@@ -1,0 +1,140 @@
+:root {
+  --htmx-table-border: #d9dee5;
+  --htmx-table-header-bg: #f6f7f9;
+  --htmx-table-row-alt: #fafbfc;
+  --htmx-table-loading: #6b7280;
+  --htmx-table-selected: #eef5ff;
+  --htmx-table-accent: #3b82f6;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--htmx-table-border);
+  background: #fff;
+}
+
+table th,
+table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--htmx-table-border);
+  text-align: left;
+  font-size: 14px;
+  vertical-align: top;
+}
+
+table thead th {
+  background: var(--htmx-table-header-bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+table tbody tr:nth-child(even) {
+  background: var(--htmx-table-row-alt);
+}
+
+.htmx-indicator {
+  color: var(--htmx-table-loading);
+  font-size: 14px;
+}
+
+/***** MODAL DIALOG ****/
+#modal {
+	position: fixed;
+	top:0px;
+	bottom: 0px;
+	left:0px;
+	right:0px;
+	background-color:rgba(0,0,0,0.5);
+	z-index:1000;
+	display:flex;
+	flex-direction:column;
+	align-items:center;
+	animation-name: fadeIn;
+	animation-duration:150ms;
+	animation-timing-function: ease;
+}
+
+#modal > .modal-underlay {
+	position: absolute;
+	z-index: -1;
+	top:0px;
+	bottom:0px;
+	left: 0px;
+	right: 0px;
+}
+
+#modal > .modal-content {
+	margin-top:10vh;
+	width:80%;
+	max-width:600px;
+	border:solid 1px #999;
+	border-radius:8px;
+	box-shadow: 0px 0px 20px 0px rgba(0,0,0,0.3);
+	background-color:white;
+	padding:20px;
+	animation-name:zoomIn;
+	animation-duration:150ms;
+	animation-timing-function: ease;
+}
+
+#modal.closing {
+	animation-name: fadeOut;
+	animation-duration:150ms;
+	animation-timing-function: ease;
+}
+
+#modal.closing > .modal-content {
+	animation-name: zoomOut;
+	animation-duration:150ms;
+	animation-timing-function: ease;
+}
+
+ @keyframes fadeIn {
+	0% {opacity: 0;}
+	100% {opacity: 1;}
+}
+
+ @keyframes fadeOut {
+	0% {opacity: 1;}
+	100% {opacity: 0;}
+}
+
+ @keyframes zoomIn {
+	0% {transform: scale(0.9);}
+	100% {transform: scale(1);}
+}
+
+ @keyframes zoomOut {
+	0% {transform: scale(1);}
+	100% {transform: scale(0.9);}
+}
+
+/* Filter Dropdown */
+.filter-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.filter-dropdown summary {
+    list-style: none;
+    cursor: pointer;
+}
+
+.filter-dropdown summary::-webkit-details-marker {
+    display: none;
+}
+
+.filter-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 100;
+    min-width: 200px;
+    background-color: #fff;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 0.25rem;
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.175);
+    padding: 0.5rem;
+}

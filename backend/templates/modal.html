@@ -1,0 +1,28 @@
+<!-- prettier-ignore -->
+<div id="modal" _="on closeModal add .closing then wait for animationend then remove me">
+    <div class="modal-underlay" _="on click trigger closeModal"></div>
+    <div class="modal-content">
+        <h3>Column Settings</h3>
+        <form hx-post="/table-settings"
+              hx-target="#table-container"
+              hx-swap="innerHTML"
+              _="on htmx:afterOnLoad trigger closeModal">
+            <div class="sortable" style="margin-bottom: 20px;">
+                {% for item in items %}
+                <div class="htx-columns-item">
+                    <span class="htx-drag-handle" style="cursor: grab; margin-right: 10px; color: #888;">::</span>
+                    <input type="hidden" name="order" value="{{ item.key }}">
+                    <label>
+                        <input type="checkbox" name="visible" value="{{ item.key }}" {% if item.visible %}checked{% endif %}>
+                        {{ item.label }}
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-secondary" _="on click trigger closeModal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Apply</button>
+            </div>
+        </form>
+    </div>
+</div>

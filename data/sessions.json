@@ -1,0 +1,52 @@
+{
+  "e2f39b9a-acd9-4858-88f0-058583610aa1": {
+    "per_page": 10,
+    "columns": {
+      "order": [
+        "full_name",
+        "email",
+        "country",
+        "status",
+        "age",
+        "balance_eur",
+        "created_date"
+      ],
+      "visible": [
+        "full_name",
+        "email",
+        "country",
+        "status",
+        "age",
+        "balance_eur",
+        "created_date"
+      ]
+    }
+  },
+  "b725799d-505c-43e3-9db0-408daeea121a": {
+    "per_page": 10,
+    "columns": {
+      "order": [
+        "status",
+        "age",
+        "email",
+        "country",
+        "balance_eur",
+        "created_date",
+        "full_name"
+      ],
+      "visible": [
+        "status",
+        "age",
+        "email",
+        "country",
+        "balance_eur",
+        "created_date",
+        "full_name"
+      ]
+    },
+    "sort": {
+      "key": "email",
+      "dir": "desc"
+    }
+  }
+}

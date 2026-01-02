@@ -1,0 +1,140 @@
+<!-- prettier-ignore -->
+<table class="table table-hover" id="results-table">
+  <thead>
+    <tr>
+      {% for col in columns %}
+        {% set key = col.key %}
+        {% set label = col.label %}
+        {% set is_active = (key == current_sort.key) %}
+        {% set next_dir = 'desc' if is_active and current_sort.dir == 'asc' else 'asc' %}
+        {% set arrow = ' &#8593;' if is_active and current_sort.dir == 'asc' else (' &#8595;' if is_active else '') %}
+        {% set cls = ' class="bg-light"' if is_active else '' %}
+
+        <th{{ cls|safe }}>
+            <div class="d-flex align-items-center gap-1 justify-content-between">
+                <span style="cursor: pointer;"
+                    hx-get="/table-data?sort={{ key }}&dir={{ next_dir }}{{ filter_params }}"
+                    hx-target="#table-container"
+                    hx-include="[name='q'], .table-filter">
+                  {{ label }}{{ arrow|safe }}
+                </span>
+
+                {% if show_filters and col.filterable %}
+                <details class="filter-dropdown">
+                  <summary class="btn btn-sm btn-link p-0 text-secondary" style="text-decoration: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-funnel-fill" viewBox="0 0 16 16">
+                      <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"/>
+                    </svg>
+                  </summary>
+                  <div class="filter-dropdown-menu">
+                    {% set val = filters.get(col.key, "") %}
+                    {% if col.type == 'select' %}
+                      <select class="form-select form-select-sm table-filter mb-2" name="{{ col.key }}">
+                        <option value="">All</option>
+                        {% for opt in col.options %}
+                          <option value="{{ opt }}" {% if opt == val %}selected{% endif %}>{{ opt }}</option>
+                        {% endfor %}
+                      </select>
+                    {% else %}
+                      <input type="text" class="form-control form-control-sm table-filter mb-2"
+                             name="{{ col.key }}" value="{{ val }}"
+                             placeholder="Filter {{ label }}...">
+                    {% endif %}
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-xs btn-outline-danger flex-grow-1"
+                                style="font-size: 0.75rem; padding: 0.25rem;"
+                                onclick="this.closest('.filter-dropdown-menu').querySelector('.table-filter').value = '';"
+                                hx-get="/table-data"
+                                hx-target="#table-container"
+                                hx-include=".table-filter, [name='q']">
+                          Reset
+                        </button>
+                        <button type="button" class="btn btn-xs btn-outline-secondary flex-grow-1"
+                                style="font-size: 0.75rem; padding: 0.25rem;"
+                                onclick="this.closest('details').removeAttribute('open')">
+                          Cancel
+                        </button>
+                        <button class="btn btn-xs btn-primary flex-grow-1"
+                                style="font-size: 0.75rem; padding: 0.25rem;"
+                                hx-get="/table-data"
+                                hx-target="#table-container"
+                                hx-include=".table-filter, [name='q']">
+                          Apply
+                        </button>
+                    </div>
+                  </div>
+                </details>
+                {% endif %}
+            </div>
+        </th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <!-- prettier-ignore -->
+  <tbody>
+    {% if not rows %}
+      <tr><td colspan="{{ columns|length }}">No results found.</td></tr>
+    {% else %}
+      {% for row in rows %}
+      <tr>
+        {% for col in columns %}
+          {% set key = col.key %}
+          {% set val = row.get(key) %}
+          <td>
+            {% if key == 'balance_eur' %}
+              {{ "%.2f"|format(val|float) }}€
+            {% elif key == 'status' %}
+              {% set cls = 'bg-success' if val == 'active' else 'bg-secondary' %}
+              <span class="badge {{ cls }}">{{ val }}</span>
+            {% else %}
+              {{ val }}
+            {% endif %}
+          </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    {% endif %}
+  </tbody>
+</table>
+
+{% if page_info %}
+<!-- prettier-ignore -->
+<div id="table-pagination" class="btn-group" hx-swap-oob="true">
+  {% if page_info.total > 1 %}
+    {% set p = page_info.current %}
+    {% set total = page_info.total %}
+
+    {% macro btn(page, label=None, disabled=False, active=False) %}
+      <button class="btn btn-sm btn-outline-secondary{% if active %} active{% endif %}"
+              {% if disabled %}disabled{% else %}
+              hx-get="/table-data?page={{ page }}{{ filter_params }}"
+              hx-target="#table-container"
+              hx-include="[name='q'], .table-filter"
+              {% endif %}>
+        {{ label or page }}
+      </button>
+    {% endmacro %}
+
+    {{ btn(p - 1, "Prev", disabled=(p <= 1)) }}
+
+    {% set start = [1, p - 2]|max %}
+    {% set end = [total, p + 2]|min %}
+
+    {% if start > 1 %}
+      {{ btn(1) }}
+      {% if start > 2 %}<span class="mx-1">...</span>{% endif %}
+    {% endif %}
+
+    {% for i in range(start, end + 1) %}
+      {{ btn(i, active=(i == p)) }}
+    {% endfor %}
+
+    {% if end < total %}
+      {% if end < total - 1 %}<span class="mx-1">...</span>{% endif %}
+      {{ btn(total) }}
+    {% endif %}
+
+    {{ btn(p + 1, "Next", disabled=(p >= total)) }}
+  {% endif %}
+</div>
+{% endif %}

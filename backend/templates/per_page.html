@@ -1,0 +1,13 @@
+<!-- prettier-ignore -->
+<div class="d-flex align-items-center gap-2" id="per-page-control">
+    <label class="small text-muted">Items per page:</label>
+    <select class="form-select form-select-sm"
+            name="per_page"
+            hx-post="/table-settings"
+            hx-target="#table-container"
+            hx-include="[name='q'], .table-filter">
+        {% for opt in options %}
+        <option value="{{ opt }}" {% if opt == current %}selected{% endif %}>{{ opt }}</option>
+        {% endfor %}
+    </select>
+</div>
