@@ -5,11 +5,9 @@
     <title>Simple HTMX Table</title>
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      href="https://cdn.jsdelivr.net/npm/daisyui@latest/dist/full.min.css"
     />
-    <link rel="stylesheet" href="/styles/table.css" />
-    <link rel="stylesheet" href="/styles/header.css" />
-    <link rel="stylesheet" href="/styles/modal.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"
       integrity="sha384-/TgkGk7p307TH7EXJDuUlgG3Ce1UVolAOFopFekQkkXihi5u/6OCvVKyz1W+idaz"
@@ -20,10 +18,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     {% endif %}
   </head>
-  <body class="p-5">
+  <body class="min-h-screen bg-base-100 p-6">
     <div
       id="table-header"
-      class="mb-4"
+      class="mb-6"
       hx-get="/table-header"
       hx-trigger="load"
       hx-swap="innerHTML"
@@ -38,12 +36,12 @@
       hx-target="this"
       hx-swap="innerHTML"
     >
-      <p>Loading data...</p>
+      <p class="text-sm text-base-content/60">Loading data...</p>
     </div>
 
     <div
       id="table-footer"
-      class="mt-4 d-flex align-items-center justify-content-between"
+      class="mt-6 flex items-center justify-between flex-wrap gap-4"
     >
       <div id="table-pagination"></div>
 

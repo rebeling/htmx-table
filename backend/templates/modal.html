@@ -1,30 +1,28 @@
 <!-- prettier-ignore -->
-<div id="modal" _="on closeModal add .closing then wait for animationend then remove me">
-    <div class="modal-underlay" _="on click trigger closeModal"></div>
-    <div class="modal-content">
-        <h3>Column Settings</h3>
-        <form hx-post="/table-settings"
+<div id="modal" class="modal modal-open" _="on closeModal remove me">
+    <div class="modal-box max-w-2xl">
+        <h3 class="text-lg font-semibold mb-3">Column Settings</h3>
+        <form class="space-y-4" hx-post="/table-settings"
               hx-target="#table-container"
               hx-swap="innerHTML"
               _="on htmx:afterOnLoad trigger closeModal">
             {% if q %}
             <input type="hidden" name="q" value="{{ q }}">
             {% endif %}
-            <div class="sortable" style="margin-bottom: 20px;">
+            <div class="sortable space-y-2">
                 {% for item in items %}
-                <div class="htx-columns-item">
-                    <span class="htx-drag-handle" style="cursor: grab; margin-right: 10px; color: #888;">::</span>
+                <div class="htx-columns-item flex items-center gap-3 rounded-box border border-base-200 bg-base-100 p-2">
+                    <span class="htx-drag-handle cursor-grab text-base-content/60">::</span>
                     <input type="hidden" name="order" value="{{ item.key }}">
-                    <div class="d-flex align-items-center justify-content-between w-100">
-                        <label class="mb-0">
-                            <input type="checkbox" name="visible" value="{{ item.key }}" {% if item.visible %}checked{% endif %}>
-                            {{ item.label }}
+                    <div class="flex items-center justify-between gap-3 w-full">
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="checkbox" class="checkbox checkbox-sm" name="visible" value="{{ item.key }}" {% if item.visible %}checked{% endif %}>
+                            <span>{{ item.label }}</span>
                         </label>
                         {% if item.key == 'created_date' %}
                         <input type="text" 
                                name="pattern_created_date" 
-                               class="form-control form-control-sm" 
-                               style="width: 120px; font-size: 0.75rem;" 
+                               class="input input-bordered input-sm w-32" 
                                value="{{ item.custom_pattern or '' }}"
                                placeholder="{{ item.default_pattern or 'YYYY-MM-DD' }}">
                         {% endif %}
@@ -32,12 +30,15 @@
                 </div>
                 {% endfor %}
             </div>
-            <div class="d-flex justify-content-end gap-2">
-                <button type="button" class="btn btn-secondary" _="on click trigger closeModal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Apply</button>
+            <div class="flex justify-end gap-2">
+                <button type="button" class="btn btn-ghost btn-sm" _="on click trigger closeModal">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm">Apply</button>
             </div>
         </form>
     </div>
+    <form method="dialog" class="modal-backdrop" _="on click trigger closeModal">
+        <button>close</button>
+    </form>
     <script>
         (function() {
             var sortable = document.querySelector("#modal .sortable");

@@ -5,12 +5,11 @@
 
 <!-- Selection Banner -->
 {% if show_row_selection and selection_info %}
-<div id="selection-banner" class="mb-2 text-secondary" style="font-size: 0.8rem;">
+<div id="selection-banner" class="mb-3 flex flex-wrap items-center gap-2 text-sm text-base-content/70">
   <input type="hidden" name="page" value="{{ page_info.current }}">
   {% if selection_info.mode == 'exclude' and selection_info.is_global %}
-     <span class="fw-bold">All {{ selection_info.total }} items in this list are selected.</span>
-     <button class="btn btn-sm btn-link text-danger text-decoration-none p-0 ms-2" 
-             style="font-size: 0.8rem;"
+     <span class="font-semibold">All {{ selection_info.total }} items in this list are selected.</span>
+     <button class="btn btn-link btn-xs px-0 text-error ml-2" 
              hx-post="/selection" 
              hx-target="#table-container"
              hx-vals='{"action": "clear"}'
@@ -18,16 +17,14 @@
   {% else %}
      <span>{{ selection_info.count }} items selected</span>
      {% if selection_info.count > 0 and all_page_selected and selection_info.total > rows|length %}
-       <button class="btn btn-sm btn-link fw-bold text-decoration-none p-0 ms-2" 
-               style="font-size: 0.8rem;"
+       <button class="btn btn-link btn-xs px-0 font-semibold ml-2" 
                hx-post="/selection" 
                hx-target="#table-container"
                hx-vals='{"action": "select_global"}'
                hx-include="[name='q'], [name='page'], .table-filter">Select all {{ selection_info.total }} items in this list?</button>
      {% endif %}
      {% if selection_info.count > 0 %}
-       <button class="btn btn-sm btn-link text-danger text-decoration-none p-0 ms-2" 
-             style="font-size: 0.8rem;"
+       <button class="btn btn-link btn-xs px-0 text-error ml-2" 
              hx-post="/selection" 
              hx-target="#table-container"
              hx-vals='{"action": "clear"}'
@@ -37,12 +34,12 @@
 </div>
 {% endif %}
 
-<table class="table table-hover" id="results-table">
+<table class="table table-zebra w-full text-sm" id="results-table">
   <thead>
     <tr>
       {% if show_row_selection %}
       <th style="width: 40px;" class="text-center">
-        <input type="checkbox" class="form-check-input"
+        <input type="checkbox" class="checkbox checkbox-sm"
                hx-post="/selection"
                hx-target="#table-container"
                hx-include="[name='q'], [name='page'], .table-filter"
@@ -56,12 +53,12 @@
         {% set is_active = (key == current_sort.key) %}
         {% set next_dir = 'desc' if is_active and current_sort.dir == 'asc' else 'asc' %}
         {% set arrow = ' &#8593;' if is_active and current_sort.dir == 'asc' else (' &#8595;' if is_active else '') %}
-        {% set cls = ' class="bg-light"' if is_active else '' %}
-        {% set justify_class = 'justify-content-end' if col.align == 'right' else 'justify-content-between' %}
+        {% set cls = ' class="bg-base-200"' if is_active else '' %}
+        {% set justify_class = 'justify-end' if col.align == 'right' else 'justify-between' %}
 
         <th{{ cls|safe }}>
-            <div class="d-flex align-items-center gap-1 {{ justify_class }}">
-                <span style="cursor: pointer;"
+            <div class="flex items-center gap-1 {{ justify_class }}">
+                <span class="cursor-pointer select-none"
                     hx-get="/table-data?sort={{ key }}&dir={{ next_dir }}{{ filter_params }}"
                     hx-target="#table-container"
                     hx-include="[name='q'], .table-filter">
@@ -69,42 +66,39 @@
                 </span>
 
                 {% if show_filters and col.filterable %}
-                <details class="filter-dropdown">
-                  <summary class="btn btn-sm btn-link p-0 text-secondary" style="text-decoration: none;">
+                <details class="filter-dropdown dropdown dropdown-end">
+                  <summary class="btn btn-ghost btn-xs px-1 text-base-content/60">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-funnel-fill" viewBox="0 0 16 16">
                       <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"/>
                     </svg>
                   </summary>
-                  <div class="filter-dropdown-menu">
+                  <div class="filter-dropdown-menu dropdown-content z-[1] mt-2 w-60 rounded-box border border-base-200 bg-base-100 p-3 shadow">
                     {% set val = filters.get(col.key, "") %}
                     {% if col.type == 'select' %}
-                      <select class="form-select form-select-sm table-filter mb-2" name="{{ col.key }}">
+                      <select class="select select-bordered select-sm w-full table-filter mb-2" name="{{ col.key }}">
                         <option value="">All</option>
                         {% for opt in col.options %}
                           <option value="{{ opt }}" {% if opt == val %}selected{% endif %}>{{ opt }}</option>
                         {% endfor %}
                       </select>
                     {% else %}
-                      <input type="text" class="form-control form-control-sm table-filter mb-2"
+                      <input type="text" class="input input-bordered input-sm w-full table-filter mb-2"
                              name="{{ col.key }}" value="{{ val }}"
                              placeholder="Filter {{ label }}...">
                     {% endif %}
-                    <div class="d-flex gap-1">
-                        <button class="btn btn-xs btn-outline-danger flex-grow-1"
-                                style="font-size: 0.75rem; padding: 0.25rem;"
+                    <div class="flex gap-1">
+                        <button class="btn btn-xs btn-outline btn-error flex-1"
                                 onclick="this.closest('.filter-dropdown-menu').querySelector('.table-filter').value = '';"
                                 hx-get="/table-data"
                                 hx-target="#table-container"
                                 hx-include=".table-filter, [name='q']">
                           Reset
                         </button>
-                        <button type="button" class="btn btn-xs btn-outline-secondary flex-grow-1"
-                                style="font-size: 0.75rem; padding: 0.25rem;"
+                        <button type="button" class="btn btn-xs btn-outline flex-1"
                                 onclick="this.closest('details').removeAttribute('open')">
                           Cancel
                         </button>
-                        <button class="btn btn-xs btn-primary flex-grow-1"
-                                style="font-size: 0.75rem; padding: 0.25rem;"
+                        <button class="btn btn-xs btn-primary flex-1"
                                 hx-get="/table-data"
                                 hx-target="#table-container"
                                 hx-include=".table-filter, [name='q']">
@@ -128,7 +122,7 @@
       <tr>
         {% if show_row_selection %}
         <td class="text-center">
-          <input type="checkbox" class="form-check-input row-checkbox" 
+          <input type="checkbox" class="checkbox checkbox-sm row-checkbox" 
                  hx-post="/selection"
                  hx-target="#table-container"
                  hx-include="[name='q'], [name='page'], .table-filter"
@@ -139,11 +133,11 @@
         {% for col in columns %}
           {% set key = col.key %}
           {% set val = row.get(key) %}
-          <td{% if col.align == 'right' %} class="text-end"{% endif %}>
+          <td{% if col.align == 'right' %} class="text-right"{% endif %}>
             {% if key == 'balance_eur' %}
               {{ "%.2f"|format(val|float) }}€
             {% elif key == 'status' %}
-              {% set cls = 'bg-success' if val == 'active' else 'bg-secondary' %}
+              {% set cls = 'badge-success' if val == 'active' else 'badge-neutral' %}
               <span class="badge {{ cls }}">{{ val }}</span>
             {% elif key == 'created_date' %}
               {{ val|date_format(col.custom_pattern or col.default_pattern or 'YYYY-MM-DD') }}
@@ -160,13 +154,13 @@
 
 {% if page_info %}
 <!-- prettier-ignore -->
-<div id="table-pagination" class="btn-group" hx-swap-oob="true">
+<div id="table-pagination" class="join" hx-swap-oob="true">
   {% if page_info.total > 1 %}
     {% set p = page_info.current %}
     {% set total = page_info.total %}
 
     {% macro btn(page, label=None, disabled=False, active=False) %}
-      <button class="btn btn-sm btn-outline-secondary{% if active %} active{% endif %}"
+      <button class="btn btn-sm btn-outline join-item{% if active %} btn-active{% endif %}"
               {% if disabled %}disabled{% else %}
               hx-get="/table-data?page={{ page }}{{ filter_params }}"
               hx-target="#table-container"
@@ -183,7 +177,7 @@
 
     {% if start > 1 %}
       {{ btn(1) }}
-      {% if start > 2 %}<span class="mx-1">...</span>{% endif %}
+      {% if start > 2 %}<span class="mx-1 text-base-content/60">...</span>{% endif %}
     {% endif %}
 
     {% for i in range(start, end + 1) %}
@@ -191,7 +185,7 @@
     {% endfor %}
 
     {% if end < total %}
-      {% if end < total - 1 %}<span class="mx-1">...</span>{% endif %}
+      {% if end < total - 1 %}<span class="mx-1 text-base-content/60">...</span>{% endif %}
       {{ btn(total) }}
     {% endif %}
 

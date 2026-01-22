@@ -1,11 +1,11 @@
 <!-- prettier-ignore -->
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <div class="d-flex align-items-center gap-3">
-        <h3>htmx table</h3>
-        <span class="htmx-indicator" style="display: none">Loading...</span>
+<div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-3">
+        <h3 class="text-xl font-semibold">htmx table</h3>
+        <span class="htmx-indicator text-sm text-base-content/70" style="display: none">Loading...</span>
     </div>
     {% if features.column_settings %}
-    <button class="btn btn-primary" hx-get="/table-settings-modal"
+    <button class="btn btn-primary btn-sm" hx-get="/table-settings-modal"
             hx-target="body" hx-swap="beforeend"
             hx-include="[name='q']">Columns</button>
     {% endif %}
@@ -13,7 +13,7 @@
 
 {% if features.search %}
 <!-- prettier-ignore -->
-<input class="form-control" type="search" name="q" placeholder="Search..."
+<input class="input input-bordered input-sm w-full max-w-sm" type="search" name="q" placeholder="Search..."
        hx-get="/table-data" hx-trigger="keyup changed delay:500ms, search"
        hx-target="#table-container" hx-indicator=".htmx-indicator"
        hx-include=".table-filter" />
