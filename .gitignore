@@ -10,3 +10,4 @@ wheels/
 .venv
 PROJECT_GUIDE.md
 data/sessions.json
+.DS_Store
